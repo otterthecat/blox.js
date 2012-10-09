@@ -17,11 +17,11 @@ To summarize: 'blah blah blah. Use at your own risk'
 instantiation
 -------------
 
-Create a new blox by invoking the builder function:
+Create a new blox by calling the BLOX object (case sensitive) and pass an object of user configs:
 
-	'blox = buildBlox(BLOX, options)'
+	blox = BLOX(optionsLiteral)
 
-currently the only available options is *devMode*, whcih defaults to *true*
+currently the only available/useable option is *devMode*, which currently defaults to *true*
 
 
 basic usage

@@ -1,175 +1,176 @@
-var BLOX = {
+window.BLOX = (function(options) {
 
-	// global window object
-	win: window,
+	var b = {
+		// global window object
+		win: window,
 
-	// global document
-	doc: document,
+		// global document
+		doc: document,
 
-	// object to hold user functions
-	funcs: {},
+		// object to hold user functions
+		funcs: {},
 
-	// object to hold arguments for same-namespaced "funcs" (optional)
-	args: {},
+		// object to hold arguments for same-namespaced "funcs" (optional)
+		args: {},
 
-	// object to hold variables to be shared across funcs
-	vars: {},
+		// object to hold variables to be shared across funcs
+		vars: {},
 
-	// default settings (user configurable)
-	config: {
-		devMode: true,
-		preventVarOverride: true
-	},
-
-	// object to hold susbscribing events
-	subscribers: {},
-
-	// array of of unit testing functions (ignored if config.devMode set to true)
-	testables: [],
-
-	// collection of helper methods
-	utils: {
-
-		merge: function(baseObj, addObj) {
-
-			for(item in addObj) {
-
-				// 'merge' cannot be overridden in this manner,
-				// as it is used elsewhere in 'blox_prototype'
-				if(item !== 'merge') {
-					baseObj[item] = addObj[item];
-				} else {
-
-					BLOX.dbug('warn', '[merge] is not replaceable in blox_prototype, ignoring %o', item);
-				}
-			}
-
-			return baseObj;
-
+		// default settings (user configurable)
+		config: {
+			devMode: true,
+			preventVarOverride: true
 		},
 
-		// used for simple unit testing of 'funcs' functions
-		assert: function(obj) {
+		// object to hold susbscribing events
+		subscribers: {},
 
-			// sample expected format:
-			// {namespace : '', testValue : '', assertValue : ''}
-			if(!BLOX.config.devMode) {
-				return null;
+		// array of of unit testing functions (ignored if config.devMode set to true)
+		testables: [],
+
+		// collection of helper methods
+		utils: {
+
+			merge: function(baseObj, addObj) {
+
+				for(item in addObj) {
+
+					// 'merge' cannot be overridden in this manner,
+					// as it is used elsewhere in 'blox_prototype'
+					if(item !== 'merge') {
+						baseObj[item] = addObj[item];
+					} else {
+
+						BLOX.dbug('warn', '[merge] is not replaceable in blox_prototype, ignoring %o', item);
+					}
+				}
+
+				return baseObj;
+
+			},
+
+			// used for simple unit testing of 'funcs' functions
+			assert: function(obj) {
+
+				// sample expected format:
+				// {namespace : '', testValue : '', assertValue : ''}
+				if(!BLOX.config.devMode) {
+					return null;
+				}
+
+				BLOX.dbug('warn', 'Assert [' + obj.namespace + ']: ' + obj.testValue + " === " + obj.assertValue);
+
+				if(obj.testValue === obj.assertValue) {
+
+					BLOX.dbug('info', "PASS : " + obj.testValue + " === " + obj.assertValue);
+					return true;
+				} else {
+
+					BLOX.dbug('error', "FAIL : " + obj.testValue + " !== " + obj.assertValue);
+					return false;
+				}
+			}
+		},
+
+
+		setUtils: function(utilObj) {
+
+			utils = this.utils;
+			utils.merge(utils, utilObj);
+
+			return this;
+		},
+
+		// user configurations can be passed
+		init: function(settings) {
+
+			if(typeof settings === 'object') {
+
+				this.utils.merge(this.config, settings);
 			}
 
-			BLOX.dbug('warn', 'Assert [' + obj.namespace + ']: ' + obj.testValue + " === " + obj.assertValue);
+			return this;
+		},
 
-			if(obj.testValue === obj.assertValue) {
+		// fire 'blox' to happen on dom load
+		// (or page load for lesser browsers)
+		launch: function() {
 
-				BLOX.dbug('info', "PASS : " + obj.testValue + " === " + obj.assertValue);
-				return true;
+			var blox = this;
+
+			// browser is not inept
+			if(blox.doc.addEventListener) {
+
+				blox.doc.addEventListener("DOMContentLoaded", function() {
+
+					return blox.exec();
+
+				}, false);
+
 			} else {
+				// browser is inept explorer 8 or less
+				blox.win.onload = function() {
 
-				BLOX.dbug('error', "FAIL : " + obj.testValue + " !== " + obj.assertValue);
-				return false;
+					return blox.exec();
+				};
 			}
-		}
-	},
+		},
+
+		// runs through 'funcs' object and call all functions within.
+		// will run in tandem with utils.assert() if config.devMode set to true
+		exec: function(namespace) {
+
+			blox = this;
+
+			// no namespace passed, so loop through them all
+			if(!namespace) {
 
 
-	setUtils: function(utilObj) {
+				if(!blox.config.devMode) {
+					for(var item in blox.funcs) {
+						(blox.args.hasOwnProperty(item)) ? blox.funcs[item](blox.args[item]) : blox.funcs[item]();
 
-		utils = this.utils;
-		utils.merge(utils, utilObj);
-
-		return this;
-	},
-
-	// user configurations can be passed
-	init: function(settings) {
-
-		if(typeof settings === 'object') {
-
-			this.utils.merge(this.config, settings);
-		}
-
-		return this;
-	},
-
-	// fire 'blox' to happen on dom load
-	// (or page load for lesser browsers)
-	launch: function() {
-
-		var blox = this;
-
-		// browser is not inept
-		if(blox.doc.addEventListener) {
-
-			blox.doc.addEventListener("DOMContentLoaded", function() {
-
-				return blox.exec();
-
-			}, false);
-
-		} else {
-			// browser is inept explorer 8 or less
-			blox.win.onload = function() {
-
-				return blox.exec();
-			};
-		}
-	},
-
-	// runs through 'funcs' object and call all functions within.
-	// will run in tandem with utils.assert() if config.devMode set to true
-	exec: function(namespace) {
-
-		blox = this;
-
-		// no namespace passed, so loop through them all
-		if(!namespace) {
-
-
-			if(!blox.config.devMode) {
-				for(var item in blox.funcs) {
-					(blox.args.hasOwnProperty(item)) ? blox.funcs[item](blox.args[item]) : blox.funcs[item]();
-
+					}
 				}
-			}
 
-			// TODO tidy this block up a bit
-			if(blox.config.devMode) {
+				// TODO tidy this block up a bit
+				if(blox.config.devMode) {
 
-				var t = blox.testables;
+					var t = blox.testables;
 
-				for(var i = 0; i < t.length; i++) {
+					for(var i = 0; i < t.length; i++) {
 
-					blox.utils.assert({
-						namespace: t[i].namespace,
-						testValue: t[i].fn(),
-						assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
-					});
+						blox.utils.assert({
+							namespace: t[i].namespace,
+							testValue: t[i].fn(),
+							assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
+						});
 
+					}
 				}
-			}
 
-			return blox;
+				return blox;
 
 			// namespace is passed, and we found a matching function, so call it
-		} else if(blox.funcs.hasOwnProperty(namespace)) {
+			} else if(blox.funcs.hasOwnProperty(namespace)) {
 
-			(blox.args.hasOwnProperty(namespace)) ? blox.funcs[namespace](blox.args[namespace]) : blox.funcs[namespace]();
+				(blox.args.hasOwnProperty(namespace)) ? blox.funcs[namespace](blox.args[namespace]) : blox.funcs[namespace]();
 
-			return blox;
+				return blox;
 
 			// no namespace matching a function - tell user we have no idea what they're
 			// trying to do.
-		} else {
+			} else {
 
-			blox.dbug('warn', 'blox does not have requested namespace [%s].', namespace);
-			return false;
-		}
-	},
+				blox.dbug('warn', 'blox does not have requested namespace [%s].', namespace);
+				return false;
+			}
+		},
 
-	// get or set an internal variable.
-	// setter can be either with name/value strings
-	// or object literal with properties 'name' and 'value'
-	var :function(newVar, value) {
+		// get or set an internal variable.
+		// setter can be either with name/value strings
+		// or object literal with properties 'name' and 'value'
+		v :function(newVar, value) {
 
 			blox = this;
 
@@ -290,60 +291,46 @@ var BLOX = {
 			// if not ie < 9.
 			if(!blox.win.console || !blox.config.devMode) {
 				return blox;
-			};
+			}
 
 			switch(lvl) {
 
-			case 'info':
+				case 'info':
 
-				ob ? blox.win.console.info(msg, ob) : blox.win.console.info(msg);
-				break;
+					ob ? blox.win.console.info(msg, ob) : blox.win.console.info(msg);
+					break;
 
-			case 'log':
+				case 'log':
 
-				ob ? blox.win.console.log(msg, ob) : blox.win.console.log(msg);
-				break;
+					ob ? blox.win.console.log(msg, ob) : blox.win.console.log(msg);
+					break;
 
-			case 'warn':
+				case 'warn':
 
-				ob ? blox.win.console.warn(msg, ob) : blox.win.console.warn(msg);
-				break;
+					ob ? blox.win.console.warn(msg, ob) : blox.win.console.warn(msg);
+					break;
 
-			case 'error':
+				case 'error':
 
-				ob ? blox.win.console.error(msg, ob) : blox.win.console.error(msg);
-				console.log("+++ Start Stack Trace +++");
-				console.trace();
-				console.log("+++ End Stack Trace +++");
-				break;
+					ob ? blox.win.console.error(msg, ob) : blox.win.console.error(msg);
+					console.log("+++ Start Stack Trace +++");
+					console.trace();
+					console.log("+++ End Stack Trace +++");
+					break;
 
-			default:
+				default:
 
-				return blox.win.console.error('DOH! blox.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
-			};
+					blox.win.console.error('DOH! blox.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
+					break;
+			}
 
 			return blox;
 
 		}
 
-}
+	};
 
-// used for spawning new blox_prototype objects
+	b.init(options);
 
-function buildBlox(proto, args) {
-
-	function F() {};
-	F.prototype = proto;
-
-	var f = new F();
-
-	if(typeof args !== 'object') {
-
-		f.init();
-	} else {
-
-		f.init(args);
-	}
-
-	return f;
-}
+	return b;
+});
