@@ -33,7 +33,7 @@ window.BLOX = (function(options) {
 
 			merge: function(baseObj, addObj) {
 
-				for(item in addObj) {
+				for(var item in addObj) {
 
 					// 'merge' cannot be overridden in this manner,
 					// as it is used elsewhere in 'blox_prototype'
@@ -41,7 +41,7 @@ window.BLOX = (function(options) {
 						baseObj[item] = addObj[item];
 					} else {
 
-						BLOX.dbug('warn', '[merge] is not replaceable in blox_prototype, ignoring %o', item);
+						b.dbug('warn', '[merge] is not replaceable in blox_prototype, ignoring %o', item);
 					}
 				}
 
@@ -54,19 +54,19 @@ window.BLOX = (function(options) {
 
 				// sample expected format:
 				// {namespace : '', testValue : '', assertValue : ''}
-				if(!BLOX.config.devMode) {
+				if(!b.config.devMode) {
 					return null;
 				}
 
-				BLOX.dbug('warn', 'Assert [' + obj.namespace + ']: ' + obj.testValue + " === " + obj.assertValue);
+				b.dbug('warn', 'Assert [' + obj.namespace + ']: ' + obj.testValue + " === " + obj.assertValue);
 
 				if(obj.testValue === obj.assertValue) {
 
-					BLOX.dbug('info', "PASS : " + obj.testValue + " === " + obj.assertValue);
+					b.dbug('info', "PASS : " + obj.testValue + " === " + obj.assertValue);
 					return true;
 				} else {
 
-					BLOX.dbug('error', "FAIL : " + obj.testValue + " !== " + obj.assertValue);
+					b.dbug('error', "FAIL : " + obj.testValue + " !== " + obj.assertValue);
 					return false;
 				}
 			}
@@ -120,14 +120,14 @@ window.BLOX = (function(options) {
 		// will run in tandem with utils.assert() if config.devMode set to true
 		exec: function(namespace) {
 
-			blox = this;
+			var blox = this;
 
 			// no namespace passed, so loop through them all
 			if(!namespace) {
 
 
 				if(!blox.config.devMode) {
-					for(var item in blox.funcs) {
+					for( var item in blox.funcs) {
 						(blox.args.hasOwnProperty(item)) ? blox.funcs[item](blox.args[item]) : blox.funcs[item]();
 
 					}
@@ -172,7 +172,7 @@ window.BLOX = (function(options) {
 		// or object literal with properties 'name' and 'value'
 		v :function(newVar, value) {
 
-			blox = this;
+			var blox = this;
 
 			if(typeof newVar === 'string' && typeof value !== 'undefined') {
 
@@ -201,7 +201,7 @@ window.BLOX = (function(options) {
 		// 'args' and/or 'testables'
 		add: function(obj) {
 
-			blox = this;
+			var blox = this;
 
 			var testables = blox.testables;
 			if(!blox.funcs.hasOwnProperty(obj.namespace) && obj.arg !== undefined) {
@@ -286,7 +286,7 @@ window.BLOX = (function(options) {
 		// non supported browsers (guess which those are...)
 		dbug: function(lvl, msg, ob) {
 
-			blox = this;
+			var blox = this;
 
 			// if not ie < 9.
 			if(!blox.win.console || !blox.config.devMode) {
