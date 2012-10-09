@@ -2,7 +2,7 @@
 test("Blox get/set vars object", function(){
 
 
-	blox = BLOX();
+	var blox = BLOX();
 
 	blox.v("first", "sassy");
 
@@ -19,10 +19,33 @@ test("Blox get/set vars object", function(){
 
 test("Blox test setting of config", function(){
 
-	bloxIsDevMode = BLOX();
+	var bloxIsDevMode = BLOX();
 	equal(bloxIsDevMode.config.devMode, true, "Blox default config has dev mode set to boolean of [true]");
 
-	bloxNotDevMode = BLOX({devMode: false});
+	var bloxNotDevMode = BLOX({devMode: false});
 	equal(bloxNotDevMode.config.devMode, false, "Blox should have dev mode set to boolean of [false]");
+
+});
+
+
+test("Blox add method (devMode false)", function(){
+
+	var blox = BLOX({devMode: false});
+
+	blox.add({
+		namespace: 'test add',
+		fn: function(){
+
+			$('#qunit-fixture').text('stuff');
+			return $('#qunit-fixture').text();
+		}
+	});
+
+
+	equal(typeof blox.funcs['test add'], 'function', 'add() method sucessfully added new fuction');
+
+	blox.exec();
+
+	equal($('#qunit-fixture').text(), 'stuff', 'added function sucessfully updated #qunit-fixture');
 
 });
