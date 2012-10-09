@@ -1,16 +1,28 @@
+
 test("Blox get/set vars object", function(){
 
 
-	blox = buildBlox(BLOX);
+	blox = BLOX();
 
-	blox.var("first", "sassy");
+	blox.v("first", "sassy");
 
 	equal(blox.vars['first'], "sassy", "Setting [vars] with name/value");
-	equal(blox.var("first"), "sassy", "Getting [first var] should be 'sassy'");
+	equal(blox.v("first"), "sassy", "Getting [first var] should be 'sassy'");
 
-	blox.var({name: 'San Deigo', value: 'classy'});
+	blox.v({name: 'San Deigo', value: 'classy'});
 
 	equal(blox.vars['San Deigo'], "classy", "Setting [vars] with literal object");
-	equal(blox.var("San Deigo"), "classy", "Getting [San Deigo] should be 'classy'");
+	equal(blox.v("San Deigo"), "classy", "Getting [San Deigo] should be 'classy'");
+
+});
+
+
+test("Blox test setting of config", function(){
+
+	bloxIsDevMode = BLOX();
+	equal(bloxIsDevMode.config.devMode, true, "Blox default config has dev mode set to boolean of [true]");
+
+	bloxNotDevMode = BLOX({devMode: false});
+	equal(bloxNotDevMode.config.devMode, false, "Blox should have dev mode set to boolean of [false]");
 
 });
