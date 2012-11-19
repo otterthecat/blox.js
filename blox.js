@@ -1,11 +1,30 @@
 window.BLOX = (function(options) {
 
+	// "private" method to load external scripts
+	// for any given block.
+	var loadScript = function(script_path, callback){
+
+		var newScript = document.createElement('script');
+		newScript.type = 'text/javascript';
+		newScript.src = script_path;
+
+		newScript.onload = function(){
+			callback();
+		}
+
+		document.getElementsByTagName('body')[0].appendChild(newScript);
+		
+	};
+
 	var b = {
 		// global window object
 		win: window,
 
 		// global document
 		doc: document,
+
+		// object to hold paths of imported scripts
+		includes: {},
 
 		// object to hold user functions
 		funcs: {},
@@ -19,6 +38,7 @@ window.BLOX = (function(options) {
 		// default settings (user configurable)
 		config: {
 			devMode: true,
+			scripts: [],
 			preventVarOverride: true
 		},
 
@@ -53,7 +73,7 @@ window.BLOX = (function(options) {
 			assert: function(obj) {
 
 				// sample expected format:
-				// {namespace : '', testValue : '', assertValue : ''}
+				// {inc: '', namespace : '', testValue : '', assertValue : ''}
 				if(!b.config.devMode) {
 					return null;
 				}
@@ -84,9 +104,11 @@ window.BLOX = (function(options) {
 		// user configurations can be passed
 		init: function(settings) {
 
+			var blox = this;
+
 			if(typeof settings === 'object') {
 
-				this.utils.merge(this.config, settings);
+				blox.utils.merge(blox.config, settings);
 			}
 
 			return this;
@@ -127,9 +149,22 @@ window.BLOX = (function(options) {
 
 
 				if(!blox.config.devMode) {
+					
 					for( var item in blox.funcs) {
-						(blox.args.hasOwnProperty(item)) ? blox.funcs[item](blox.args[item]) : blox.funcs[item]();
 
+						if(blox.includes.hasOwnProperty(item) && typeof blox.includes[item] === 'string'){
+							
+							// TODO fix scoping to be a bit more sane
+							var itm = item;
+							loadScript(blox.includes[item], function(){
+
+								(blox.args.hasOwnProperty(itm)) ? blox.funcs[itm](blox.args[itm]) : blox.funcs[itm]();
+							});
+
+						} else {
+						
+							(blox.args.hasOwnProperty(item)) ? blox.funcs[item](blox.args[item]) : blox.funcs[item]();
+						}
 					}
 				}
 
@@ -140,12 +175,29 @@ window.BLOX = (function(options) {
 
 					for(var i = 0; i < t.length; i++) {
 
+						if(typeof t[i].inc === 'string' && t[i].inc.length > 0){
+
+							// TODO handle scoping better so this 
+							// line isn't needed
+							var _t = t[i];
+
+							loadScript(t[i].inc, function(){
+
+								blox.utils.assert({
+									namespace: _t.namespace,
+									testValue: _t.fn(),
+									assertValue: typeof(_t.assert) === 'function' ? _t.assert() : _t.assert
+								});
+							});
+
+						} else {
+
 						blox.utils.assert({
 							namespace: t[i].namespace,
 							testValue: t[i].fn(),
 							assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
 						});
-
+						}
 					}
 				}
 
@@ -205,8 +257,12 @@ window.BLOX = (function(options) {
 
 			var testables = blox.testables;
 			if(!blox.funcs.hasOwnProperty(obj.namespace) && obj.arg !== undefined) {
+
 				blox.funcs[obj.namespace] = obj.fn;
 				blox.args[obj.namespace] = obj.arg;
+				blox.includes[obj.namespace] = obj.inc;
+
+
 
 				return blox;
 
@@ -214,9 +270,11 @@ window.BLOX = (function(options) {
 			// so only update the funcs object
 			} else if(!blox.funcs.hasOwnProperty(obj.namespace)) {
 				blox.funcs[obj.namespace] = obj.fn;
+				blox.includes[obj.namespace] = obj.inc;
 
 				// TODO - ensure namespace can't be written over
 				testables.push({
+					inc: obj.inc,
 					namespace: obj.namespace,
 					fn: obj.fn,
 					assert: obj.assert
