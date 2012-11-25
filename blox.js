@@ -232,7 +232,7 @@ window.BLOX = (function(options) {
 					blox.vars[newVar] = value;
 				}
 
-				return blox.vars;
+				return blox;
 
 			} else if(typeof newVar === 'string' && typeof value === 'undefined') {
 
@@ -244,7 +244,7 @@ window.BLOX = (function(options) {
 					blox.vars[newVar.name] = newVar.value;
 				}
 
-				return blox.vars;
+				return blox;
 			}
 		},
 
@@ -310,7 +310,7 @@ window.BLOX = (function(options) {
 
 			this.subscribers[ev].push(fn);
 
-			return this.subscribers[ev];
+			return this;
 
 		},
 
@@ -325,7 +325,7 @@ window.BLOX = (function(options) {
 				}
 			}
 
-			return this.subscribers[ev];
+			return this;
 
 		},
 
