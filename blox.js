@@ -2,19 +2,19 @@ window.BLOX = (function(options) {
 
 	// "private" method to load external scripts
 	// for any given block.
-	var loadScript = function(script_path, callback){
+	var loadScript = function(script_path, callback) {
 
-		var newScript = document.createElement('script');
-		newScript.type = 'text/javascript';
-		newScript.src = script_path;
+			var newScript = document.createElement('script');
+			newScript.type = 'text/javascript';
+			newScript.src = script_path;
 
-		newScript.onload = function(){
-			callback();
-		}
+			newScript.onload = function() {
+				callback();
+			}
 
-		document.getElementsByTagName('body')[0].appendChild(newScript);
-		
-	};
+			document.getElementsByTagName('body')[0].appendChild(newScript);
+
+		};
 
 	var b = {
 		// global window object
@@ -149,20 +149,20 @@ window.BLOX = (function(options) {
 
 
 				if(!blox.config.devMode) {
-					
-					for( var item in blox.funcs) {
 
-						if(blox.includes.hasOwnProperty(item) && typeof blox.includes[item] === 'string'){
-							
+					for(var item in blox.funcs) {
+
+						if(blox.includes.hasOwnProperty(item) && typeof blox.includes[item] === 'string') {
+
 							// TODO fix scoping to be a bit more sane
 							var itm = item;
-							loadScript(blox.includes[item], function(){
+							loadScript(blox.includes[item], function() {
 
 								(blox.args.hasOwnProperty(itm)) ? blox.funcs[itm].call(b, blox.args[itm]) : blox.funcs[itm].call(b);
 							});
 
 						} else {
-						
+
 							(blox.args.hasOwnProperty(item)) ? blox.funcs[item].call(b, blox.args[item]) : blox.funcs[item].call(b);
 						}
 					}
@@ -175,13 +175,13 @@ window.BLOX = (function(options) {
 
 					for(var i = 0; i < t.length; i++) {
 
-						if(typeof t[i].inc === 'string' && t[i].inc.length > 0){
+						if(typeof t[i].inc === 'string' && t[i].inc.length > 0) {
 
 							// TODO handle scoping better so this 
 							// line isn't needed
 							var _t = t[i];
 
-							loadScript(t[i].inc, function(){
+							loadScript(t[i].inc, function() {
 
 								blox.utils.assert({
 									namespace: _t.namespace,
@@ -192,26 +192,26 @@ window.BLOX = (function(options) {
 
 						} else {
 
-						blox.utils.assert({
-							namespace: t[i].namespace,
-							testValue: t[i].fn.call(b),
-							assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
-						});
+							blox.utils.assert({
+								namespace: t[i].namespace,
+								testValue: t[i].fn.call(b),
+								assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
+							});
 						}
 					}
 				}
 
 				return blox;
 
-			// namespace is passed, and we found a matching function, so call it
+				// namespace is passed, and we found a matching function, so call it
 			} else if(blox.funcs.hasOwnProperty(namespace)) {
 
 				(blox.args.hasOwnProperty(namespace)) ? blox.funcs[namespace](blox.args[namespace]) : blox.funcs[namespace]();
 
 				return blox;
 
-			// no namespace matching a function - tell user we have no idea what they're
-			// trying to do.
+				// no namespace matching a function - tell user we have no idea what they're
+				// trying to do.
 			} else {
 
 				blox.dbug('warn', 'blox does not have requested namespace [%s].', namespace);
@@ -222,7 +222,7 @@ window.BLOX = (function(options) {
 		// get or set an internal variable.
 		// setter can be either with name/value strings
 		// or object literal with properties 'name' and 'value'
-		v :function(newVar, value) {
+		v: function(newVar, value) {
 
 			var blox = this;
 
@@ -266,8 +266,8 @@ window.BLOX = (function(options) {
 
 				return blox;
 
-			// no arguments, and namespace does not already exist
-			// so only update the funcs object
+				// no arguments, and namespace does not already exist
+				// so only update the funcs object
 			} else if(!blox.funcs.hasOwnProperty(obj.namespace)) {
 				blox.funcs[obj.namespace] = obj.fn;
 				blox.includes[obj.namespace] = obj.inc;
@@ -282,7 +282,7 @@ window.BLOX = (function(options) {
 
 				return blox;
 
-			// we already have that namespace - so warn the user and exit
+				// we already have that namespace - so warn the user and exit
 			} else {
 
 				blox.dbug("error", "blox already contains namespace [%s].", obj.namespace);
@@ -353,33 +353,33 @@ window.BLOX = (function(options) {
 
 			switch(lvl) {
 
-				case 'info':
+			case 'info':
 
-					ob ? blox.win.console.info(msg, ob) : blox.win.console.info(msg);
-					break;
+				ob ? blox.win.console.info(msg, ob) : blox.win.console.info(msg);
+				break;
 
-				case 'log':
+			case 'log':
 
-					ob ? blox.win.console.log(msg, ob) : blox.win.console.log(msg);
-					break;
+				ob ? blox.win.console.log(msg, ob) : blox.win.console.log(msg);
+				break;
 
-				case 'warn':
+			case 'warn':
 
-					ob ? blox.win.console.warn(msg, ob) : blox.win.console.warn(msg);
-					break;
+				ob ? blox.win.console.warn(msg, ob) : blox.win.console.warn(msg);
+				break;
 
-				case 'error':
+			case 'error':
 
-					ob ? blox.win.console.error(msg, ob) : blox.win.console.error(msg);
-					console.log("+++ Start Stack Trace +++");
-					console.trace();
-					console.log("+++ End Stack Trace +++");
-					break;
+				ob ? blox.win.console.error(msg, ob) : blox.win.console.error(msg);
+				console.log("+++ Start Stack Trace +++");
+				console.trace();
+				console.log("+++ End Stack Trace +++");
+				break;
 
-				default:
+			default:
 
-					blox.win.console.error('DOH! blox.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
-					break;
+				blox.win.console.error('DOH! blox.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
+				break;
 			}
 
 			return blox;
@@ -391,4 +391,3 @@ window.BLOX = (function(options) {
 	b.init(options);
 
 	return b;
-});
