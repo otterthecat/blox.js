@@ -158,12 +158,12 @@ window.BLOX = (function(options) {
 							var itm = item;
 							loadScript(blox.includes[item], function(){
 
-								(blox.args.hasOwnProperty(itm)) ? blox.funcs[itm](blox.args[itm]) : blox.funcs[itm]();
+								(blox.args.hasOwnProperty(itm)) ? blox.funcs[itm].call(b, blox.args[itm]) : blox.funcs[itm].call(b);
 							});
 
 						} else {
 						
-							(blox.args.hasOwnProperty(item)) ? blox.funcs[item](blox.args[item]) : blox.funcs[item]();
+							(blox.args.hasOwnProperty(item)) ? blox.funcs[item].call(b, blox.args[item]) : blox.funcs[item].call(b);
 						}
 					}
 				}
@@ -185,7 +185,7 @@ window.BLOX = (function(options) {
 
 								blox.utils.assert({
 									namespace: _t.namespace,
-									testValue: _t.fn(),
+									testValue: _t.fn.call(b),
 									assertValue: typeof(_t.assert) === 'function' ? _t.assert() : _t.assert
 								});
 							});
@@ -194,7 +194,7 @@ window.BLOX = (function(options) {
 
 						blox.utils.assert({
 							namespace: t[i].namespace,
-							testValue: t[i].fn(),
+							testValue: t[i].fn.call(b),
 							assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
 						});
 						}
