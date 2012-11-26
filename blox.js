@@ -391,3 +391,4 @@ window.BLOX = (function(options) {
 	b.init(options);
 
 	return b;
+});
