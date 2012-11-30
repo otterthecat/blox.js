@@ -104,36 +104,32 @@ window.BLOX = (function(options) {
 		// user configurations can be passed
 		init: function(settings) {
 
-			var blox = this;
-
 			if(typeof settings === 'object') {
 
-				blox.utils.merge(blox.config, settings);
+				b.utils.merge(b.config, settings);
 			}
 
 			return this;
 		},
 
-		// fire 'blox' to happen on dom load
+		// fire 'b' to happen on dom load
 		// (or page load for lesser browsers)
 		launch: function() {
 
-			var blox = this;
-
 			// browser is not inept
-			if(blox.doc.addEventListener) {
+			if(b.doc.addEventListener) {
 
-				blox.doc.addEventListener("DOMContentLoaded", function() {
+				b.doc.addEventListener("DOMContentLoaded", function() {
 
-					return blox.exec();
+					return b.exec();
 
 				}, false);
 
 			} else {
 				// browser is inept explorer 8 or less
-				blox.win.onload = function() {
+				b.win.onload = function() {
 
-					return blox.exec();
+					return b.exec();
 				};
 			}
 		},
@@ -142,79 +138,72 @@ window.BLOX = (function(options) {
 		// will run in tandem with utils.assert() if config.devMode set to true
 		exec: function(namespace) {
 
-			var blox = this;
-
 			// no namespace passed, so loop through them all
 			if(!namespace) {
 
+				if(!b.config.devMode) {
 
-				if(!blox.config.devMode) {
+					for(var item in b.funcs) {
 
-					for(var item in blox.funcs) {
+						if(b.includes.hasOwnProperty(item) && typeof b.includes[item] === 'string') {
 
-						if(blox.includes.hasOwnProperty(item) && typeof blox.includes[item] === 'string') {
+							loadScript(b.includes[item], function() {
 
-							// TODO fix scoping to be a bit more sane
-							var itm = item;
-							loadScript(blox.includes[item], function() {
-
-								(blox.args.hasOwnProperty(itm)) ? blox.funcs[itm].call(b, blox.args[itm]) : blox.funcs[itm].call(b);
+								(b.args.hasOwnProperty(item)) ? b.funcs[item].call(b, b.args[item]) : b.funcs[item].call(b);
 							});
 
 						} else {
 
-							(blox.args.hasOwnProperty(item)) ? blox.funcs[item].call(b, blox.args[item]) : blox.funcs[item].call(b);
+							(b.args.hasOwnProperty(item)) ? b.funcs[item].call(b, b.args[item]) : b.funcs[item].call(b);
 						}
 					}
 				}
 
 				// TODO tidy this block up a bit
-				if(blox.config.devMode) {
+				if(b.config.devMode) {
 
-					var t = blox.testables;
+					var t = b.testables;
 
 					for(var i = 0; i < t.length; i++) {
 
-						if(typeof t[i].inc === 'string' && t[i].inc.length > 0) {
+						var _testable = t[i];
 
-							// TODO handle scoping better so this 
-							// line isn't needed
-							var _t = t[i];
+						if(typeof _testable.inc === 'string' && _testable.inc.length > 0) {
 
-							loadScript(t[i].inc, function() {
+							loadScript(_testable.inc, function() {
 
-								blox.utils.assert({
-									namespace: _t.namespace,
-									testValue: _t.fn.call(b),
-									assertValue: typeof(_t.assert) === 'function' ? _t.assert() : _t.assert
+								b.utils.assert({
+									namespace: _testable.namespace,
+									testValue: _testable.fn.call(b),
+									assertValue: typeof(_testable.assert) === 'function' ? _testable.assert() : _testable.assert
 								});
 							});
 
 						} else {
 
-							blox.utils.assert({
-								namespace: t[i].namespace,
-								testValue: t[i].fn.call(b),
-								assertValue: typeof(t[i].assert) === 'function' ? t[i].assert() : t[i].assert
+							b.utils.assert({
+								namespace: _testable.namespace,
+								testValue: _testable.fn.call(b),
+								assertValue: typeof(_testable.assert) === 'function' ? _testable.assert() : _testable.assert
 							});
 						}
 					}
 				}
 
-				return blox;
+				return b;
 
 				// namespace is passed, and we found a matching function, so call it
-			} else if(blox.funcs.hasOwnProperty(namespace)) {
+			} else if(b.funcs.hasOwnProperty(namespace)) {
 
-				(blox.args.hasOwnProperty(namespace)) ? blox.funcs[namespace](blox.args[namespace]) : blox.funcs[namespace]();
+				(b.args.hasOwnProperty(namespace)) ? b.funcs[namespace](b.args[namespace]) : b.funcs[namespace]();
 
-				return blox;
+				return b;
 
 				// no namespace matching a function - tell user we have no idea what they're
 				// trying to do.
 			} else {
 
-				blox.dbug('warn', 'blox does not have requested namespace [%s].', namespace);
+				b.dbug('warn', 'BLOX does not have requested namespace [%s].', namespace);
 				return false;
 			}
 		},
@@ -224,27 +213,25 @@ window.BLOX = (function(options) {
 		// or object literal with properties 'name' and 'value'
 		v: function(newVar, value) {
 
-			var blox = this;
-
 			if(typeof newVar === 'string' && typeof value !== 'undefined') {
 
-				if(!blox.vars.hasOwnProperty(newVar)) {
-					blox.vars[newVar] = value;
+				if(!b.vars.hasOwnProperty(newVar)) {
+					b.vars[newVar] = value;
 				}
 
-				return blox;
+				return b;
 
 			} else if(typeof newVar === 'string' && typeof value === 'undefined') {
 
-				return blox.vars[newVar];
+				return b.vars[newVar];
 
 			} else if(typeof newVar === 'object') {
 
-				if(!blox.vars.hasOwnProperty(newVar.name)) {
-					blox.vars[newVar.name] = newVar.value;
+				if(!b.vars.hasOwnProperty(newVar.name)) {
+					b.vars[newVar.name] = newVar.value;
 				}
 
-				return blox;
+				return b;
 			}
 		},
 
@@ -253,24 +240,20 @@ window.BLOX = (function(options) {
 		// 'args' and/or 'testables'
 		add: function(obj) {
 
-			var blox = this;
+			var testables = b.testables;
+			if(!b.funcs.hasOwnProperty(obj.namespace) && obj.arg !== undefined) {
 
-			var testables = blox.testables;
-			if(!blox.funcs.hasOwnProperty(obj.namespace) && obj.arg !== undefined) {
+				b.funcs[obj.namespace] = obj.fn;
+				b.args[obj.namespace] = obj.arg;
+				b.includes[obj.namespace] = obj.inc;
 
-				blox.funcs[obj.namespace] = obj.fn;
-				blox.args[obj.namespace] = obj.arg;
-				blox.includes[obj.namespace] = obj.inc;
-
-
-
-				return blox;
+				return b;
 
 				// no arguments, and namespace does not already exist
 				// so only update the funcs object
-			} else if(!blox.funcs.hasOwnProperty(obj.namespace)) {
-				blox.funcs[obj.namespace] = obj.fn;
-				blox.includes[obj.namespace] = obj.inc;
+			} else if(!b.funcs.hasOwnProperty(obj.namespace)) {
+				b.funcs[obj.namespace] = obj.fn;
+				b.includes[obj.namespace] = obj.inc;
 
 				// TODO - ensure namespace can't be written over
 				testables.push({
@@ -280,16 +263,16 @@ window.BLOX = (function(options) {
 					assert: obj.assert
 				});
 
-				return blox;
+				return b;
 
 				// we already have that namespace - so warn the user and exit
 			} else {
 
-				blox.dbug("error", "blox already contains namespace [%s].", obj.namespace);
+				b.dbug("error", "BLOX already contains namespace [%s].", obj.namespace);
 				return false;
 			}
 
-			return blox;
+			return b;
 		},
 
 		// remove specified function from 'funcs'
@@ -298,6 +281,7 @@ window.BLOX = (function(options) {
 			delete this.funcs[namespace]
 			delete this.args[namespace];
 
+			return this;
 		},
 
 		// note that the "pub/sub" feature is
@@ -344,33 +328,31 @@ window.BLOX = (function(options) {
 		// non supported browsers (guess which those are...)
 		dbug: function(lvl, msg, ob) {
 
-			var blox = this;
-
 			// if not ie < 9.
-			if(!blox.win.console || !blox.config.devMode) {
-				return blox;
+			if(!b.win.console || !b.config.devMode) {
+				return b;
 			}
 
 			switch(lvl) {
 
 			case 'info':
 
-				ob ? blox.win.console.info(msg, ob) : blox.win.console.info(msg);
+				ob ? b.win.console.info(msg, ob) : b.win.console.info(msg);
 				break;
 
 			case 'log':
 
-				ob ? blox.win.console.log(msg, ob) : blox.win.console.log(msg);
+				ob ? b.win.console.log(msg, ob) : b.win.console.log(msg);
 				break;
 
 			case 'warn':
 
-				ob ? blox.win.console.warn(msg, ob) : blox.win.console.warn(msg);
+				ob ? b.win.console.warn(msg, ob) : b.win.console.warn(msg);
 				break;
 
 			case 'error':
 
-				ob ? blox.win.console.error(msg, ob) : blox.win.console.error(msg);
+				ob ? b.win.console.error(msg, ob) : b.win.console.error(msg);
 				console.log("+++ Start Stack Trace +++");
 				console.trace();
 				console.log("+++ End Stack Trace +++");
@@ -378,11 +360,11 @@ window.BLOX = (function(options) {
 
 			default:
 
-				blox.win.console.error('DOH! blox.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
+				b.win.console.error('DOH! BLOX.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
 				break;
 			}
 
-			return blox;
+			return b;
 
 		}
 
