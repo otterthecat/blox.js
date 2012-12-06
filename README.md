@@ -74,3 +74,19 @@ The two subscribers above could then be called with a *blox*'s *publish* method,
 passing data to the subscribers via the *publish* method's second argument:
 
 	blox.publish("drink", "root beer");
+
+### including external scripts
+
+Another feature baked in is the ability to have a blox import an external javascript file containing dependencies
+for which a function may require. This is done through an optional parameter *inc* when using the *add* method
+
+	blox.add({
+		namespace: 'include-a-roo'
+		inc: 'path/to/script.js',
+		fn: function(){
+			call_function_from_included_script();	
+		},
+		assert: function(){
+			return "awesome script included!";
+		}
+	});

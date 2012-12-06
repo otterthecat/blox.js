@@ -1,0 +1,1 @@
+var include_test_variable = "test successful";

@@ -49,3 +49,23 @@ test("Blox add method (devMode false)", function(){
 	equal($('#qunit-fixture').text(), 'stuff', 'added function sucessfully updated #qunit-fixture');
 
 });
+
+
+test("Blox import external script", function(){
+
+	stop();
+
+	var blox = BLOX({devMode: false});
+
+	blox.add({
+		namespace: 'include_test',
+		inc: 'assets/include-test.js',
+		fn: function(){
+
+			equal(include_test_variable, 'test successful', 'successfully imported external script');
+
+			start();
+		}
+
+	}).exec();
+});
