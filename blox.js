@@ -113,16 +113,17 @@ window.BLOX = (function(options) {
 			return this;
 		},
 
-		// fire 'b' to happen on dom load
+		// fire 'bblox' to happen on dom load
 		// (or page load for lesser browsers)
 		launch: function() {
 
+			_this = this;
 			// browser is not inept
-			if(this.doc.addEventListener) {
+			if(this.document.addEventListener) {
 
-				this.doc.addEventListener("DOMContentLoaded", function() {
+				this.document.addEventListener("DOMContentLoaded", function() {
 
-					return this.exec();
+					return _this.exec();
 
 				}, false);
 
@@ -130,7 +131,7 @@ window.BLOX = (function(options) {
 				// browser is inept explorer 8 or less
 				window.onload = function() {
 
-					return this.exec();
+					return _this.exec();
 				};
 			}
 		},
