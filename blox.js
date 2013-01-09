@@ -16,40 +16,38 @@ window.BLOX = (function(options) {
 
 		};
 
-	var b = {
-		// global window object
-		win: window,
+	var blox = function(){
 
-		// global document
-		doc: document,
+		// global doc
+		this.document = window.document;
 
 		// object to hold paths of imported scripts
-		includes: {},
+		this.includes = {};
 
 		// object to hold user functions
-		funcs: {},
+		this.funcs = {};
 
 		// object to hold arguments for same-namespaced "funcs" (optional)
-		args: {},
+		this.args = {};
 
 		// object to hold variables to be shared across funcs
-		vars: {},
+		this.vars = {};
 
 		// default settings (user configurable)
-		config: {
+		this.config = {
 			devMode: true,
 			scripts: [],
 			preventVarOverride: true
-		},
+		};
 
 		// object to hold susbscribing events
-		subscribers: {},
+		this.subscribers = {};
 
 		// array of of unit testing functions (ignored if config.devMode set to true)
-		testables: [],
+		this.testables = [];
 
 		// collection of helper methods
-		utils: {
+		this.utils = {
 
 			merge: function(baseObj, addObj) {
 
@@ -61,7 +59,7 @@ window.BLOX = (function(options) {
 						baseObj[item] = addObj[item];
 					} else {
 
-						b.dbug('warn', '[merge] is not replaceable in blox_prototype, ignoring %o', item);
+						this.dbug('warn', '[merge] is not replaceable in blox, ignoring %o', item);
 					}
 				}
 
@@ -74,22 +72,36 @@ window.BLOX = (function(options) {
 
 				// sample expected format:
 				// {inc: '', namespace : '', testValue : '', assertValue : ''}
-				if(!b.config.devMode) {
+				if(!this.config.devMode) {
 					return null;
 				}
 
-				b.dbug('warn', 'Assert [' + obj.namespace + ']: ' + obj.testValue + " === " + obj.assertValue);
+				this.dbug('warn', 'Assert [' + obj.namespace + ']: ' + obj.testValue + " === " + obj.assertValue);
 
 				if(obj.testValue === obj.assertValue) {
 
-					b.dbug('info', "PASS : " + obj.testValue + " === " + obj.assertValue);
+					this.dbug('info', "PASS : " + obj.testValue + " === " + obj.assertValue);
 					return true;
 				} else {
 
-					b.dbug('error', "FAIL : " + obj.testValue + " !== " + obj.assertValue);
+					this.dbug('error', "FAIL : " + obj.testValue + " !== " + obj.assertValue);
 					return false;
 				}
 			}
+		}
+	};
+
+	blox.prototype = {
+
+		// user configurations can be passed
+		init: function(settings) {
+
+			if(typeof settings === 'object') {
+
+				this.utils.merge(this.config, settings);
+			}
+
+			return this;
 		},
 
 
@@ -101,35 +113,24 @@ window.BLOX = (function(options) {
 			return this;
 		},
 
-		// user configurations can be passed
-		init: function(settings) {
-
-			if(typeof settings === 'object') {
-
-				b.utils.merge(b.config, settings);
-			}
-
-			return this;
-		},
-
 		// fire 'b' to happen on dom load
 		// (or page load for lesser browsers)
 		launch: function() {
 
 			// browser is not inept
-			if(b.doc.addEventListener) {
+			if(this.doc.addEventListener) {
 
-				b.doc.addEventListener("DOMContentLoaded", function() {
+				this.doc.addEventListener("DOMContentLoaded", function() {
 
-					return b.exec();
+					return this.exec();
 
 				}, false);
 
 			} else {
 				// browser is inept explorer 8 or less
-				b.win.onload = function() {
+				window.onload = function() {
 
-					return b.exec();
+					return this.exec();
 				};
 			}
 		},
@@ -141,28 +142,29 @@ window.BLOX = (function(options) {
 			// no namespace passed, so loop through them all
 			if(!namespace) {
 
-				if(!b.config.devMode) {
+				if(!this.config.devMode) {
 
-					for(var item in b.funcs) {
+					for(var item in this.funcs) {
 
-						if(b.includes.hasOwnProperty(item) && typeof b.includes[item] === 'string') {
+						if(this.includes.hasOwnProperty(item) && typeof this.includes[item] === 'string') {
 
-							loadScript(b.includes[item], function() {
+							_this = this;
+							loadScript(this.includes[item], function() {
 
-								(b.args.hasOwnProperty(item)) ? b.funcs[item].call(b, b.args[item]) : b.funcs[item].call(b);
+								(_this.args.hasOwnProperty(item)) ? _this.funcs[item].call(_this, _this.args[item]) : _this.funcs[item].call(_this);
 							});
 
 						} else {
 
-							(b.args.hasOwnProperty(item)) ? b.funcs[item].call(b, b.args[item]) : b.funcs[item].call(b);
+							(this.args.hasOwnProperty(item)) ? this.funcs[item].call(this, this.args[item]) : this.funcs[item].call(this);
 						}
 					}
 				}
 
 				// TODO tidy this block up a bit
-				if(b.config.devMode) {
+				if(this.config.devMode) {
 
-					var t = b.testables;
+					var t = this.testables;
 
 					for(var i = 0; i < t.length; i++) {
 
@@ -172,38 +174,38 @@ window.BLOX = (function(options) {
 
 							loadScript(_testable.inc, function() {
 
-								b.utils.assert({
+								this.utils.assert({
 									namespace: _testable.namespace,
-									testValue: _testable.fn.call(b),
+									testValue: _testable.fn.call(this),
 									assertValue: typeof(_testable.assert) === 'function' ? _testable.assert() : _testable.assert
 								});
 							});
 
 						} else {
 
-							b.utils.assert({
+							this.utils.assert({
 								namespace: _testable.namespace,
-								testValue: _testable.fn.call(b),
+								testValue: _testable.fn.call(this),
 								assertValue: typeof(_testable.assert) === 'function' ? _testable.assert() : _testable.assert
 							});
 						}
 					}
 				}
 
-				return b;
+				return this;
 
 				// namespace is passed, and we found a matching function, so call it
-			} else if(b.funcs.hasOwnProperty(namespace)) {
+			} else if(this.funcs.hasOwnProperty(namespace)) {
 
-				(b.args.hasOwnProperty(namespace)) ? b.funcs[namespace](b.args[namespace]) : b.funcs[namespace]();
+				(this.args.hasOwnProperty(namespace)) ? this.funcs[namespace](this.args[namespace]) : this.funcs[namespace]();
 
-				return b;
+				return this;
 
 				// no namespace matching a function - tell user we have no idea what they're
 				// trying to do.
 			} else {
 
-				b.dbug('warn', 'BLOX does not have requested namespace [%s].', namespace);
+				this.dbug('warn', 'BLOX does not have requested namespace [%s].', namespace);
 				return false;
 			}
 		},
@@ -215,23 +217,23 @@ window.BLOX = (function(options) {
 
 			if(typeof newVar === 'string' && typeof value !== 'undefined') {
 
-				if(!b.vars.hasOwnProperty(newVar)) {
-					b.vars[newVar] = value;
+				if(!this.vars.hasOwnProperty(newVar)) {
+					this.vars[newVar] = value;
 				}
 
-				return b;
+				return this;
 
 			} else if(typeof newVar === 'string' && typeof value === 'undefined') {
 
-				return b.vars[newVar];
+				return this.vars[newVar];
 
 			} else if(typeof newVar === 'object') {
 
-				if(!b.vars.hasOwnProperty(newVar.name)) {
-					b.vars[newVar.name] = newVar.value;
+				if(!this.vars.hasOwnProperty(newVar.name)) {
+					this.vars[newVar.name] = newVar.value;
 				}
 
-				return b;
+				return this;
 			}
 		},
 
@@ -240,20 +242,20 @@ window.BLOX = (function(options) {
 		// 'args' and/or 'testables'
 		add: function(obj) {
 
-			var testables = b.testables;
-			if(!b.funcs.hasOwnProperty(obj.namespace) && obj.arg !== undefined) {
+			var testables = this.testables;
+			if(!this.funcs.hasOwnProperty(obj.namespace) && obj.arg !== undefined) {
 
-				b.funcs[obj.namespace] = obj.fn;
-				b.args[obj.namespace] = obj.arg;
-				b.includes[obj.namespace] = obj.inc;
+				this.funcs[obj.namespace] = obj.fn;
+				this.args[obj.namespace] = obj.arg;
+				this.includes[obj.namespace] = obj.inc;
 
 				return b;
 
 				// no arguments, and namespace does not already exist
 				// so only update the funcs object
-			} else if(!b.funcs.hasOwnProperty(obj.namespace)) {
-				b.funcs[obj.namespace] = obj.fn;
-				b.includes[obj.namespace] = obj.inc;
+			} else if(!this.funcs.hasOwnProperty(obj.namespace)) {
+				this.funcs[obj.namespace] = obj.fn;
+				this.includes[obj.namespace] = obj.inc;
 
 				// TODO - ensure namespace can't be written over
 				testables.push({
@@ -268,11 +270,11 @@ window.BLOX = (function(options) {
 				// we already have that namespace - so warn the user and exit
 			} else {
 
-				b.dbug("error", "BLOX already contains namespace [%s].", obj.namespace);
+				this.dbug("error", "BLOX already contains namespace [%s].", obj.namespace);
 				return false;
 			}
 
-			return b;
+			return this;
 		},
 
 		// remove specified function from 'funcs'
@@ -329,7 +331,7 @@ window.BLOX = (function(options) {
 		dbug: function(lvl, msg, ob) {
 
 			// if not ie < 9.
-			if(!b.win.console || !b.config.devMode) {
+			if(!window.console || !this.config.devMode) {
 				return b;
 			}
 
@@ -337,22 +339,22 @@ window.BLOX = (function(options) {
 
 			case 'info':
 
-				ob ? b.win.console.info(msg, ob) : b.win.console.info(msg);
+				ob ? window.console.info(msg, ob) : window.console.info(msg);
 				break;
 
 			case 'log':
 
-				ob ? b.win.console.log(msg, ob) : b.win.console.log(msg);
+				ob ? window.console.log(msg, ob) : window.console.log(msg);
 				break;
 
 			case 'warn':
 
-				ob ? b.win.console.warn(msg, ob) : b.win.console.warn(msg);
+				ob ? window.console.warn(msg, ob) : window.console.warn(msg);
 				break;
 
 			case 'error':
 
-				ob ? b.win.console.error(msg, ob) : b.win.console.error(msg);
+				ob ? window.console.error(msg, ob) : window.console.error(msg);
 				console.log("+++ Start Stack Trace +++");
 				console.trace();
 				console.log("+++ End Stack Trace +++");
@@ -360,7 +362,7 @@ window.BLOX = (function(options) {
 
 			default:
 
-				b.win.console.error('DOH! BLOX.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
+				window.console.error('DOH! BLOX.dbug passed unavailable level [%s]. Try "info", "log", "warn" or "error"', lvl);
 				break;
 			}
 
@@ -370,6 +372,7 @@ window.BLOX = (function(options) {
 
 	};
 
+	var b = new blox();
 	b.init(options);
 
 	return b;
