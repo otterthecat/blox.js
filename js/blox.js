@@ -382,5 +382,5 @@
 
 // invocation below is INSIDE the originating parens to pass JsLint
 // see http://jslinterrors.com/move-the-invocation-into-the-parens-that-contain-the-function/
-// considering a switch to JsHint...
+// seems JsHint likes this too... nevermind
 }());
