@@ -2,7 +2,7 @@
 test("Blox get/set vars object", function(){
 
 
-	var blox = BLOX();
+	var blox = new BLOX();
 
 	blox.v("first", "sassy");
 
@@ -19,10 +19,10 @@ test("Blox get/set vars object", function(){
 
 test("Blox test setting of config", function(){
 
-	var bloxIsDevMode = BLOX();
+	var bloxIsDevMode = new BLOX();
 	equal(bloxIsDevMode.config.devMode, true, "Blox default config has dev mode set to boolean of [true]");
 
-	var bloxNotDevMode = BLOX({devMode: false});
+	var bloxNotDevMode = new BLOX({devMode: false});
 	equal(bloxNotDevMode.config.devMode, false, "Blox should have dev mode set to boolean of [false]");
 
 });
@@ -30,7 +30,7 @@ test("Blox test setting of config", function(){
 
 test("Blox add method (devMode false)", function(){
 
-	var blox = BLOX({devMode: false});
+	var blox = new BLOX({devMode: false});
 
 	blox.add({
 		namespace: 'test add',
@@ -55,7 +55,7 @@ test("Blox import external script", function(){
 
 	stop();
 
-	var blox = BLOX({devMode: false});
+	var blox = new BLOX({devMode: false});
 
 	blox.add({
 		namespace: 'include_test',

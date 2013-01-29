@@ -17,9 +17,9 @@ To summarize: 'blah blah blah. Use at your own risk'
 instantiation
 -------------
 
-Create a new blox by calling the BLOX object (case sensitive) and pass an object of user configs:
+Create a new blox by creating a new BLOX object (case sensitive) and pass an object of user configs:
 
-	blox = BLOX(optionsLiteral)
+	blox = new BLOX(optionsLiteral)
 
 currently the only available/useable option is *devMode*, which currently defaults to *true*
 

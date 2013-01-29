@@ -1,22 +1,23 @@
-window.BLOX = (function(options) {
+(function(options) {
 
 	// "private" method to load external scripts
 	// for any given block.
-	var loadScript = function(script_path, callback) {
+	var loadScript = function(script_path, callback_obj) {
 
 			var newScript = document.createElement('script');
 			newScript.type = 'text/javascript';
 			newScript.src = script_path;
 
+			var _this = this;
 			newScript.onload = function() {
-				callback();
-			}
+				callback_obj.fn.call(callback_obj.scope, callback_obj.arg);
+			};
 
 			document.getElementsByTagName('body')[0].appendChild(newScript);
 
 		};
 
-	var blox = function(){
+	var Blox = function(options){
 
 		// global doc
 		this.document = window.document;
@@ -88,10 +89,12 @@ window.BLOX = (function(options) {
 					return false;
 				}
 			}
-		}
+		};
+
+		this.init(options);
 	};
 
-	blox.prototype = {
+	Blox.prototype = {
 
 		// user configurations can be passed
 		init: function(settings) {
@@ -107,7 +110,7 @@ window.BLOX = (function(options) {
 
 		setUtils: function(utilObj) {
 
-			utils = this.utils;
+			var utils = this.utils;
 			utils.merge(utils, utilObj);
 
 			return this;
@@ -117,7 +120,7 @@ window.BLOX = (function(options) {
 		// (or page load for lesser browsers)
 		launch: function() {
 
-			_this = this;
+			var _this = this;
 			// browser is not inept
 			if(this.document.addEventListener) {
 
@@ -149,15 +152,16 @@ window.BLOX = (function(options) {
 
 						if(this.includes.hasOwnProperty(item) && typeof this.includes[item] === 'string') {
 
-							_this = this;
-							loadScript(this.includes[item], function() {
-
-								(_this.args.hasOwnProperty(item)) ? _this.funcs[item].call(_this, _this.args[item]) : _this.funcs[item].call(_this);
+							var _this = this;
+							loadScript(this.includes[item], {
+								fn: _this.funcs[item],
+								scope: _this,
+								arg:  _this.args[item] || undefined
 							});
 
 						} else {
 
-							(this.args.hasOwnProperty(item)) ? this.funcs[item].call(this, this.args[item]) : this.funcs[item].call(this);
+							this.funcs[item].call(this, this.args[item] || undefined);
 						}
 					}
 				}
@@ -173,13 +177,15 @@ window.BLOX = (function(options) {
 
 						if(typeof _testable.inc === 'string' && _testable.inc.length > 0) {
 
-							loadScript(_testable.inc, function() {
+							loadScript(_testable.inc, {
 
-								this.utils.assert({
+								fn: this.utils.assert,
+								scope: this,
+								arg: {
 									namespace: _testable.namespace,
 									testValue: _testable.fn.call(this),
 									assertValue: typeof(_testable.assert) === 'function' ? _testable.assert() : _testable.assert
-								});
+								}
 							});
 
 						} else {
@@ -198,8 +204,7 @@ window.BLOX = (function(options) {
 				// namespace is passed, and we found a matching function, so call it
 			} else if(this.funcs.hasOwnProperty(namespace)) {
 
-				(this.args.hasOwnProperty(namespace)) ? this.funcs[namespace](this.args[namespace]) : this.funcs[namespace]();
-
+				this.funcs[namespace](this.args[namespace] || undefined);
 				return this;
 
 				// no namespace matching a function - tell user we have no idea what they're
@@ -250,7 +255,7 @@ window.BLOX = (function(options) {
 				this.args[obj.namespace] = obj.arg;
 				this.includes[obj.namespace] = obj.inc;
 
-				return b;
+				return this;
 
 				// no arguments, and namespace does not already exist
 				// so only update the funcs object
@@ -266,7 +271,7 @@ window.BLOX = (function(options) {
 					assert: obj.assert
 				});
 
-				return b;
+				return this;
 
 				// we already have that namespace - so warn the user and exit
 			} else {
@@ -281,7 +286,7 @@ window.BLOX = (function(options) {
 		// remove specified function from 'funcs'
 		remove: function(namespace) {
 
-			delete this.funcs[namespace]
+			delete this.funcs[namespace];
 			delete this.args[namespace];
 
 			return this;
@@ -321,7 +326,7 @@ window.BLOX = (function(options) {
 			// add assert calls here as well?
 			for(var item in this.subscribers[ev]) {
 
-				data ? this.subscribers[ev][item](data) : this.subscribers[ev][item]();
+				this.subscribers[ev][item](data || undefined);
 			}
 
 			return this;
@@ -333,32 +338,32 @@ window.BLOX = (function(options) {
 
 			// if not ie < 9.
 			if(!window.console || !this.config.devMode) {
-				return b;
+				return this;
 			}
 
 			switch(lvl) {
 
 			case 'info':
 
-				ob ? window.console.info(msg, ob) : window.console.info(msg);
+				window.console.info(msg, ob || undefined);
 				break;
 
 			case 'log':
 
-				ob ? window.console.log(msg, ob) : window.console.log(msg);
+				window.console.log(msg, ob || undefined);
 				break;
 
 			case 'warn':
 
-				ob ? window.console.warn(msg, ob) : window.console.warn(msg);
+				window.console.warn(msg, ob || undefined);
 				break;
 
 			case 'error':
 
-				ob ? window.console.error(msg, ob) : window.console.error(msg);
-				console.log("+++ Start Stack Trace +++");
-				console.trace();
-				console.log("+++ End Stack Trace +++");
+				window.console.error(msg, ob || undefined);
+				window.console.log("+++ Start Stack Trace +++");
+				window.console.trace();
+				window.console.log("+++ End Stack Trace +++");
 				break;
 
 			default:
@@ -367,14 +372,15 @@ window.BLOX = (function(options) {
 				break;
 			}
 
-			return b;
+			return this;
 
 		}
 
 	};
 
-	var b = new blox();
-	b.init(options);
+	window.BLOX = Blox;
 
-	return b;
-});
+// invocation below is INSIDE the originating parens to pass JsLint
+// see http://jslinterrors.com/move-the-invocation-into-the-parens-that-contain-the-function/
+// considering a switch to JsHint...
+}());
