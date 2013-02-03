@@ -1,3 +1,7 @@
+/*! Blox JS - v0.1.0 - 2013-02-03
+* https://github.com/otterthecat/blox.js
+* Copyright (c) 2013 Otter the Cat; Licensed MIT, GPL */
+
 (function(options) {
 
 	// "private" method to load external scripts
