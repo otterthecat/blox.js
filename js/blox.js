@@ -1,4 +1,4 @@
-(function(options) {
+(function() {
 
 	// "private" method to load external scripts
 	// for any given block
@@ -8,7 +8,6 @@
 			newScript.type = 'text/javascript';
 			newScript.src = script_path;
 
-			var _this = this;
 			newScript.onload = function() {
 				callback_obj.fn.call(callback_obj.scope, callback_obj.arg);
 			};
@@ -379,8 +378,4 @@
 	};
 
 	window.BLOX = Blox;
-
-// invocation below is INSIDE the originating parens to pass JsLint
-// see http://jslinterrors.com/move-the-invocation-into-the-parens-that-contain-the-function/
-// seems JsHint likes this too... nevermind
 }());
